@@ -77,7 +77,7 @@
               setTimeout(() => {
                 if (tempname == this.name) {
                   fetch(
-                    `https://g.tenor.com/v1/search?q=${this.name}&key=${this.apiKey}&limit=8`
+                    `https://g.tenor.com/v1/search?q=${this.name}&key=${this.apiKey}&limit=16`
                   )
                     .then((response) => response.json())
                     .then((data) => {
