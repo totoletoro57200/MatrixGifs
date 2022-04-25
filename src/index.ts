@@ -27,7 +27,6 @@ AutojoinRoomsMixin.setupOnClient(client)
 
 client.on("room.message", (roomId, event) => {
     if (!event["content"]) return
-    // console.log(event)
     const sender = event["sender"];
     const body = event["content"]["body"];
 
@@ -52,13 +51,10 @@ client.on("room.message", (roomId, event) => {
 app.use(express.static("public"));
 
 app.post("/api/send", (req, res) => {
-    // console.log(req.body)
     fetch(req.body.url.gif.url)
         .then((res: any) => res.arrayBuffer())
         .then((buffer: ArrayBuffer) => {
-            //console.log(toBuffer(buffer))
             client.uploadContent(toBuffer(buffer)).then(url => {
-                console.log(url)
                 client.sendMessage(req.body.roomId, {
                     "msgtype": "m.image",
                     "body": "tenor.gif",
