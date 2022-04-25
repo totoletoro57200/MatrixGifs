@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      <center>
+        <h1>Gif selector</h1>
+        <input
+          type="text"
+          placeholder="Nom du gif"
+          @keyup="getGif()"
+          v-model="name"
+          style="margin-bottom: 32px"
+        />
+      </center>
+      <div class="flex">
+        <div
+          style="cursor: pointer"
+          @click="sendGif(gif)"
+          v-for="gif in this.gifs"
+          :key="gif"
+        >
+          <img :src="gif.media[0].gif.url" />
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@3"></script>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      Vue.createApp({
+        data() {
+          return {
+            apiKey: "91BP7GEC5G3C",
+            gifs: [],
+            name: "",
+          };
+        },
+        mounted() {
+          if (!urlParams.get("room")) {
+            alert("URL invalide");
+          }
+        },
+        methods: {
+          sendGif(gif) {
+            fetch(
+              "https://g.tenor.com/v1/registershare?id=" +
+                gif.id +
+                "&key=" +
+                this.apiKey +
+                "&q=" +
+                this.name
+            );
+            const resp = fetch("/api/send", {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                url: gif.media[0],
+                roomId: urlParams.get("room"),
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                alert(data.message);
+              });
+          },
+          getGif() {
+            if (urlParams.get("room")) {
+              let tempname = this.name;
+              setTimeout(() => {
+                if (tempname == this.name) {
+                  fetch(
+                    `https://g.tenor.com/v1/search?q=${this.name}&key=${this.apiKey}&limit=8`
+                  )
+                    .then((response) => response.json())
+                    .then((data) => {
+                      this.gifs = data.results;
+                      console.log(data);
+                    });
+                }
+              }, 1000);
+            }
+          },
+        },
+      }).mount("#app");
+    </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Encode+Sans:wght@500;800&display=swap");
+      * {
+        font-family: "Encode Sans", sans-serif;
+        font-weight: 800;
+      }
+      .flex {
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-direction: row;
+        -ms-flex-direction: row;
+        flex-direction: row;
+        -webkit-flex-wrap: wrap;
+        -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+        -webkit-justify-content: space-between;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        -webkit-align-content: stretch;
+        -ms-flex-line-pack: stretch;
+        align-content: stretch;
+        -webkit-align-items: center;
+        -ms-flex-align: center;
+        align-items: center;
+      }
+      .flex * {
+        width: 300px;
+        height: auto;
+      }
+    </style>
+  </body>
+</html>
