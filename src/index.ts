@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 import { Application } from "express";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import {
     MatrixClient,
     SimpleFsStorageProvider,
@@ -16,6 +17,12 @@ const port = process.env.PORT || 3000;
 const bodyParser = require("body-parser")
 
 app.use(bodyParser.json());
+
+let proxy: HttpsProxyAgent | undefined;
+
+if(process.env.PROXY) {
+    proxy = new HttpsProxyAgent(process.env.PROXY)
+}
 
 const homeserverUrl = process.env.HOMESERVER_URL ?? "https://matrix.org"
 const accessToken = process.env.ACCESS_TOKEN ?? "NO_TOKEN_SPECIFIED"
@@ -51,7 +58,11 @@ client.on("room.message", (roomId, event) => {
 app.use(express.static("public"));
 
 app.post("/api/send", (req, res) => {
-    fetch(req.body.url.gif.url)
+    let params = {}
+    if(proxy) {
+        params = {agent: proxy}
+    }
+    fetch(req.body.url.gif.url, params)
         .then((res: any) => res.arrayBuffer())
         .then((buffer: ArrayBuffer) => {
             client.uploadContent(toBuffer(buffer)).then(url => {
